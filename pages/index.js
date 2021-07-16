@@ -29,6 +29,30 @@ function ProfileSidebar(props) {
   );
 }
 
+function ProfileRelationsBox(props) {
+  console.log(props);
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {props.title} ({props.items.length})
+      </h2>
+      <ul>
+        {props.items.map((itemAtual) => {
+          console.log(itemAtual.login);
+          // return (
+          //   <li key={itemAtual}>
+          //     <a href={`https://github.com/${(itemAtual, image)}.png`}>
+          //       <img src={itemAtual.image} />
+          //       <span>{itemAtual.title}</span>
+          //     </a>
+          //   </li>
+          // );
+        })}
+      </ul>
+    </ProfileRelationsBoxWrapper>
+  );
+}
+
 export default function Home() {
   const [comunidades, setComunidades] = React.useState([
     {
@@ -37,7 +61,7 @@ export default function Home() {
       image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg',
     },
   ]);
-  const usuarioAleatorio = 'saranascimento';
+  const imagemPerfil = 'saranascimento';
   const pessoasFavoritas = [
     'juunegreiros',
     'omariosouto',
@@ -46,13 +70,23 @@ export default function Home() {
     'marcobrunodev',
     'felipefialho',
   ];
+  const [seguidores, setSeguidores] = React.useState([]);
+  React.useEffect(() => {
+    fetch('https://api.github.com/users/saranascimento/followers')
+      .then(function (respostaDoServidor) {
+        return respostaDoServidor.json();
+      })
+      .then(function (respostaCompleta) {
+        setSeguidores(respostaCompleta);
+      });
+  }, []);
 
   return (
     <>
       <AlurakutMenu />
       <MainGrid>
         <div className="profileArea" style={{ gridArea: 'profileArea' }}>
-          <ProfileSidebar githubUser={usuarioAleatorio} />
+          <ProfileSidebar githubUser={imagemPerfil} />
         </div>
         <div className="welcomeArea" style={{ gridArea: 'welcomeArea' }}>
           <Box>
@@ -62,7 +96,7 @@ export default function Home() {
           </Box>
 
           <Box>
-            <h2 className="subTitle">O que você deseja fazer?</h2>
+            <h2 className="subTitle">Adicionar uma comunidade:</h2>
             <form
               onSubmit={function handleCriaComunidade(event) {
                 event.preventDefault();
@@ -81,17 +115,17 @@ export default function Home() {
             >
               <div>
                 <input
-                  placeholder="Qual vai ser o nome da sua comunidade?"
+                  placeholder="Digite o nome da comunidade:"
                   name="title"
-                  aria-label="Qual vai ser o nome da sua comunidade?"
+                  aria-label="Digite o nome da comunidade:"
                   type="text"
                 />
               </div>
               <div>
                 <input
-                  placeholder="Coloque uma URL para usar de capa"
+                  placeholder="Insira a URL da imagem da capa:"
                   name="image"
-                  aria-label="Coloque uma URL para usar de capa"
+                  aria-label="Insira a URL da imagem da capa:"
                 />
               </div>
               <button>Criar comunidade</button>
@@ -103,8 +137,9 @@ export default function Home() {
           className="profileRelationsArea"
           style={{ gridArea: 'profileRelationsArea' }}
         >
+          <ProfileRelationsBox title="Seguidores" items={seguidores} />
           <ProfileRelationsBoxWrapper>
-            <h2 className="smallTitle">Comunidade ({comunidades.length})</h2>
+            <h2 className="smallTitle">Comunidades ({comunidades.length})</h2>
             <ul>
               {comunidades.map((itemAtual) => {
                 return (
