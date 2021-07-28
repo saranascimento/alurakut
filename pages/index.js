@@ -1,4 +1,6 @@
 import React from 'react';
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
 import MainGrid from '../src/components/MainGrid';
 import Box from '../src/components/Box';
 import {
@@ -30,7 +32,6 @@ function ProfileSidebar(props) {
 }
 
 function ProfileRelationsBox(props) {
-  console.log(props);
   return (
     <ProfileRelationsBoxWrapper>
       <h2 className="smallTitle">
@@ -38,7 +39,6 @@ function ProfileRelationsBox(props) {
       </h2>
       <ul>
         {props.items.map((itemAtual) => {
-          console.log(itemAtual.login);
           // return (
           //   <li key={itemAtual}>
           //     <a href={`https://github.com/${(itemAtual, image)}.png`}>
@@ -53,9 +53,9 @@ function ProfileRelationsBox(props) {
   );
 }
 
-export default function Home() {
+export default function Home(props) {
   const [comunidades, setComunidades] = React.useState([]);
-  const usuarioPerfil = 'saranascimento';
+  const usuarioPerfil = props.githubUser;
   const pessoasFavoritas = [
     'juunegreiros',
     'omariosouto',
@@ -76,7 +76,7 @@ export default function Home() {
       });
 
     // API GraphQL - Read-only API token
-    const token = 'YOUR-API-TOKEN';
+    const token = 'f56628536720b6b2ba1a4497b4f476';
 
     fetch('https://graphql.datocms.com/', {
       method: 'POST',
@@ -207,4 +207,30 @@ export default function Home() {
       </MainGrid>
     </>
   );
+}
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context);
+  const token = cookies.USER_TOKEN;
+
+  const { isAuthenticated } = await fetch('http://localhost:3000/api/auth', {
+    headers: {
+      Authorization: token,
+    },
+  }).then((resposta) => resposta.json());
+
+  if (!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+
+  const { githubUser } = jwt.decode(token);
+  return {
+    props: {
+      githubUser,
+    }, // will be passed to the page component as props
+  };
 }
